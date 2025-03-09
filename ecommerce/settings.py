@@ -137,8 +137,6 @@ STATICFILES_DIRS = [
 ]
 
 # Razorpay Configuration
-SECRET_KEY = "s_e_c7017862900"
-DEBUG=0
 RAZORPAY_KEY_ID = "rzp_test_LKSfKCQdqFCXZx"
 RAZORPAY_KEY_SECRET = "XIT4leTYmIqamRYGzs6Qm6GO"
 

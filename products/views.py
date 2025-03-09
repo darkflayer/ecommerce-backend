@@ -69,12 +69,13 @@ def delete_order(request, pk):
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
+
 def create_payment(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
     # Create Razorpay Order
     payment_data = {
-        "amount": int(order.product.price * order.quantity * 100),  # Amount in paise (₹1 = 100 paise)
+        "amount": int(order.product.price * order.quantity * 100),  # Amount in paise
         "currency": "INR",
         "receipt": f"order_{order_id}",
         "payment_capture": 1  # Auto-capture payment
@@ -88,10 +89,11 @@ def create_payment(request, order_id):
         "order": order,
         "razorpay_order_id": razorpay_order['id'],
         "razorpay_key": settings.RAZORPAY_KEY_ID,
-        "callback_url": "/payment/success/"
+        "callback_url": f"https://ecommerce-backend-32vy.onrender.com/products/payment/success/"
     }
 
     return render(request, 'products/payment_page.html', context)
+
 
 
 @csrf_exempt
