@@ -2,7 +2,7 @@ from .models import Product,Order
 from django.conf import settings
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
-import razorpay
+import razorpay,json
 from django.views.decorators.csrf import csrf_exempt
 
 def product_list(request):
@@ -99,26 +99,47 @@ def create_payment(request, order_id):
 @csrf_exempt
 def payment_success(request):
     if request.method == "POST":
-        data = request.POST
-
-        # Verify Signature
         try:
-            razorpay_client.utility.verify_payment_signature({
-                'razorpay_order_id': data['razorpay_order_id'],
-                'razorpay_payment_id': data['razorpay_payment_id'],
-                'razorpay_signature': data['razorpay_signature'],
-            })
-            
-            # Update order details in the database
-            order = Order.objects.get(razorpay_order_id=data['razorpay_order_id'])
-            order.razorpay_payment_id = data['razorpay_payment_id']
-            order.razorpay_signature = data['razorpay_signature']
-            order.order_status = 'Paid'
-            order.save()
+            # Extract JSON data from the Razorpay Webhook
+            data = json.loads(request.body)
 
-            return render(request, 'products/payment_success.html', {"order": order})
+            # Verify Signature
+            razorpay_client.utility.verify_payment_signature({
+                'razorpay_order_id': data.get('razorpay_order_id'),
+                'razorpay_payment_id': data.get('razorpay_payment_id'),
+                'razorpay_signature': data.get('razorpay_signature'),
+            })
+
+            # Check if the order exists
+            try:
+                order = Order.objects.get(razorpay_order_id=data.get('razorpay_order_id'))
+                order.razorpay_payment_id = data.get('razorpay_payment_id')
+                order.razorpay_signature = data.get('razorpay_signature')
+                order.order_status = 'Paid'
+                order.save()
+
+                return render(request, 'products/payment_success.html', {"order": order})
+
+            except Order.DoesNotExist:
+                return render(request, 'products/payment_failed.html', {
+                    "error": "Order not found in the database."
+                })
+
+        except json.JSONDecodeError:
+            return render(request, 'products/payment_failed.html', {
+                "error": "Invalid JSON data received."
+            })
+
+        except razorpay.errors.SignatureVerificationError:
+            return render(request, 'products/payment_failed.html', {
+                "error": "Signature verification failed. Payment may be tampered with."
+            })
 
         except Exception as e:
-            return render(request, 'products/payment_failed.html')
+            return render(request, 'products/payment_failed.html', {
+                "error": str(e)  # Show the exact error for debugging
+            })
 
-    return render(request, 'products/payment_failed.html')
+    return render(request, 'products/payment_failed.html', {
+        "error": "Invalid request method."
+    })
