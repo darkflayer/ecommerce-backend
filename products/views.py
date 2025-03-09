@@ -95,13 +95,12 @@ def create_payment(request, order_id):
     return render(request, 'products/payment_page.html', context)
 
 
-
 @csrf_exempt
 def payment_success(request):
     if request.method == "POST":
         try:
-            # Extract JSON data from the Razorpay Webhook
-            data = json.loads(request.body)
+            # Extract data from POST request (NOT JSON)
+            data = request.POST
 
             # Verify Signature
             razorpay_client.utility.verify_payment_signature({
@@ -125,11 +124,6 @@ def payment_success(request):
                     "error": "Order not found in the database."
                 })
 
-        except json.JSONDecodeError:
-            return render(request, 'products/payment_failed.html', {
-                "error": "Invalid JSON data received."
-            })
-
         except razorpay.errors.SignatureVerificationError:
             return render(request, 'products/payment_failed.html', {
                 "error": "Signature verification failed. Payment may be tampered with."
@@ -137,9 +131,10 @@ def payment_success(request):
 
         except Exception as e:
             return render(request, 'products/payment_failed.html', {
-                "error": str(e)  # Show the exact error for debugging
+                "error": str(e)  # Display detailed error for debugging
             })
 
     return render(request, 'products/payment_failed.html', {
         "error": "Invalid request method."
     })
+
