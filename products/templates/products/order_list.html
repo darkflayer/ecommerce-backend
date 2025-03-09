@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order List</title>
+</head>
+<body>
+    <h1>Orders</h1>
+    <a href="{% url 'create_order' %}">Create New Order</a>
+    <ul>
+        {% for order in orders %}
+            <li>
+                {{ order.customer_name }} ordered {{ order.product.name }}
+                (Status: {{ order.order_status }})
+                <a href="{% url 'order_detail' order.id %}">View</a> |
+                <a href="{% url 'update_order' order.id %}">Update</a> |
+                <a href="{% url 'delete_order' order.id %}">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

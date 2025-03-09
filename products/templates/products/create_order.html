@@ -1,0 +1,23 @@
+<form method="POST">
+    {% csrf_token %}
+    <label>Product:</label>
+    <select name="product">
+        {% for product in products %}
+            <option value="{{ product.id }}">{{ product.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Customer Name:</label>
+    <input type="text" name="customer_name" required>
+
+    <label>Customer Email:</label>
+    <input type="email" name="customer_email" required>
+
+    <label>Quantity:</label>
+    <input type="number" name="quantity" min="1" required>
+
+    <label>Address:</label>
+    <textarea name="address" required></textarea>
+
+    <button type="submit">Create Order</button>
+</form>

@@ -1,0 +1,11 @@
+<form method="POST">
+    {% csrf_token %}
+    <label>Status:</label>
+    <select name="order_status">
+        <option value="Pending" {% if order.order_status == "Pending" %}selected{% endif %}>Pending</option>
+        <option value="Shipped" {% if order.order_status == "Shipped" %}selected{% endif %}>Shipped</option>
+        <option value="Delivered" {% if order.order_status == "Delivered" %}selected{% endif %}>Delivered</option>
+        <option value="Cancelled" {% if order.order_status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+    </select>
+    <button type="submit">Update Order</button>
+</form>
